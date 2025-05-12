@@ -1,7 +1,7 @@
 from datetime import datetime # It Get the correct date and time & it also store it with customer data or in logs.
-from file_handler import save_customer, log_trasaction
+from file_handler import save_customer, log_trasaction,load_customer
 
-customers = {} # create disctionary for customer, using to stores the records of all customer
+customers = load_customer() # create disctionary for customer, using to stores the records of all customer
 
 # here, we write the code for add to customer
 def add_customer():
@@ -19,7 +19,7 @@ def add_customer():
     
 # then, view specific customer according to the user
 def viwe_customer():
-    acc_no = input("Enter a account number to view : ").capitalize()
+    acc_no = input("Enter a account number to view : ")
     if acc_no in customers:
         print(f"Account Number : {acc_no}\n Details : {customers[acc_no]}")
     else:
@@ -30,7 +30,7 @@ def search_customer():
     search_name = input("Enter Customer Name : ")
     status = False
     for acc_no,detail in customers.items():
-        if detail['name'] == search_name:
+        if detail["Name"].lower() == search_name.lower():
             print(f"Account Number : {acc_no}\n Details : {detail}")
             status = True
     if not status:
@@ -45,10 +45,8 @@ def view_all_customer():
         
 # total amount in bank
 def total_amout():
-    total = 0
-    for acc in customers:
-        total += customers[acc]['balance']
-    print(f"Total Balance In Bank : {total}")
+   total = sum(detail['Balace'] for detail in customers.values())
+   print(f"Total balance in bank : {total}")
 
 # make banker_menu 
 def banker_menu():
@@ -74,4 +72,3 @@ def banker_menu():
            total_amout()
         else:
             print("Invalid Choice")
-banker_menu()

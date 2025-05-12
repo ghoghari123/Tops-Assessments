@@ -1,7 +1,7 @@
 import json # it's very usefull for data read & write, speically when data in distionary formate, store the data
 from datetime import datetime # use for automatic write in current date and time e.g.
 
-customer_file = "customers.txt"
+customer_file = "customers.json"
 log_file = "transactions.log"
 
 def load_customer():
