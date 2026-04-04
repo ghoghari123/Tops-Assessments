@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Create Blog Post</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <input name="title" placeholder="Title"><br><br>
+
+    <!-- Rich text (basic textarea) -->
+    <textarea name="content" placeholder="Content"></textarea><br><br>
+
+    <!-- Image -->
+    <input type="file" name="image"><br><br>
+
+    <!-- Category -->
+    <select name="category">
+        {% for c in categories %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <button>Create</button>
+</form>
+
+{% endblock %}

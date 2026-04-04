@@ -1,23 +1,27 @@
-from data import *
+# auth.py
+
+from data import users
 
 def login():
     while True:
-        username = (input("Enter Your Username : ")).strip()
+        username = input("Enter Your Username: ").strip()
+
         if username == "":
-            print("User Can't Be Empty..!")
+            print("Username can't be empty!")
             continue
-        role = (input("Enter Your Role : ")).strip().lower()
-        if role not in ["user","staff"]:
-            print("Inalid Role..!Select Role - 'user' or 'staff'")
+
+        role = input("Enter Your Role (user/staff): ").strip().lower()
+
+        if role not in ["user", "staff"]:
+            print("Invalid Role! Choose 'user' or 'staff'")
             continue
-        # store data into disctionary
-        userdt = {
-            "User_name" : username,
-            "Role" : role
+
+        user_data = {
+            "username": username,
+            "role": role
         }
 
-        users.append(userdt)
+        users.append(user_data)
 
-        print(f"User_name : {username}\n Role : {role}")
-        return userdt 
-# login()
+        print(f"Welcome {username}! Role: {role}")
+        return user_data

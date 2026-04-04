@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>All Blog Posts</h2>
+
+<!-- FILTERS -->
+<form method="get">
+    <input name="author" placeholder="Author ID">
+    <input name="category" placeholder="Category ID">
+    <input type="date" name="start">
+    <input type="date" name="end">
+    <button>Filter</button>
+</form>
+
+<hr>
+
+{% for post in posts %}
+    <h3>{{ post.title }}</h3>
+
+    <p>{{ post.content }}</p>
+
+    {% if post.image %}
+        <img src="{{ post.image.url }}" width="200">
+    {% endif %}
+
+    <p>Category: {{ post.category.name }}</p>
+    <p>Author: {{ post.author.username }}</p>
+    <p>Created: {{ post.created_at }}</p>
+    <p>Updated: {{ post.updated_at }}</p>
+
+    <!-- LIKE -->
+    <p>Likes: {{ post.like_set.count }}</p>
+    <a href="/interactions/like/{{ post.id }}/">Like / Unlike</a>
+
+    <!-- FOLLOW -->
+    <a href="/interactions/follow/{{ post.author.id }}/">
+        Follow / Unfollow Author
+    </a>
+
+    <!-- VIEW DETAILS -->
+    <br><br>
+    <a href="/post/{{ post.id }}/">View Post</a>
+
+    <!-- DELETE (only author) -->
+    {% if post.author == user %}
+        <a href="/delete/{{ post.id }}/">Delete</a>
+    {% endif %}
+
+    <hr>
+{% endfor %}
+
+{% endblock %}
