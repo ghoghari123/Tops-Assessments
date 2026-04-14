@@ -1,25 +1,154 @@
-<h2>{{ user_profile.username }}'s Profile</h2>
+<!DOCTYPE html>
+<html lang="en">
 
-<p>Followers: {{ followers }}</p>
-<p>Following: {{ following }}</p>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user_profile.username }}'s Profile</title>
 
-{% if request.user != user_profile %}
-<form method="post" action="{% url 'toggle_follow' user_profile.id %}">
-    {% csrf_token %}
-    <button type="submit">
-        {% if is_following %}
-            Unfollow
-        {% else %}
-            Follow
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .profile-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.7s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .stats div {
+            text-align: center;
+        }
+
+        .follow-btn {
+            display: block;
+            margin: 15px auto;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .follow-btn:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        hr {
+            margin: 20px 0;
+        }
+
+        .posts {
+            margin-top: 10px;
+        }
+
+        .post-card {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+
+        .post-card:hover {
+            background: #eef1ff;
+            transform: translateY(-3px);
+        }
+
+        .no-posts {
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="profile-container">
+
+        <h2>{{ user_profile.username }}'s Profile</h2>
+
+        <div class="stats">
+            <div>
+                <p>{{ followers }}</p>
+                <small>Followers</small>
+            </div>
+            <div>
+                <p>{{ following }}</p>
+                <small>Following</small>
+            </div>
+        </div>
+
+        {% if request.user != user_profile %}
+        <form method="post" action="{% url 'toggle_follow' user_profile.id %}">
+            {% csrf_token %}
+            <button class="follow-btn" type="submit">
+                {% if is_following %}
+                Unfollow
+                {% else %}
+                Follow
+                {% endif %}
+            </button>
+        </form>
         {% endif %}
-    </button>
-</form>
-{% endif %}
 
-<hr>
+        <hr>
 
-<h3>Posts</h3>
+        <h3>Posts</h3>
 
-{% for post in posts %}
-    <h4>{{ post.title }}</h4>
-{% endfor %}
+        <div class="posts">
+            {% for post in posts %}
+            <div class="post-card">
+                <h4>{{ post.title }}</h4>
+            </div>
+            {% empty %}
+            <p class="no-posts">No posts yet</p>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</body>
+
+</html>

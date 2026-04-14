@@ -1,73 +1,263 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>{{ blog.title }}</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        .cover-img {
+            width: 100%;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .meta {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .tags span {
+            background: #eef1ff;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        /* ACTION BUTTONS */
+        .action-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn {
+            padding: 6px 12px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .edit-btn:hover {
+            background: #43a047;
+            transform: scale(1.05);
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            background: #e53935;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #c62828;
+            transform: scale(1.05);
+        }
+
+        /* LIKE */
+        .like-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .like-btn:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        /* COMMENTS */
+        .comment-box textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .comment-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .comment {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+
+        .comment:hover {
+            background: #eef1ff;
+        }
+
+        .delete-comment {
+            color: red;
+            font-size: 12px;
+            margin-left: 10px;
+            text-decoration: none;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: white;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>{{ blog.title }}</h2>
+    <div class="container">
 
-{% if blog.cover_image %}
-    <img src="{{ blog.cover_image.url }}" width="300">
-{% endif %}
+        <!-- BLOG -->
+        <div class="card">
+            <h2>{{ blog.title }}</h2>
 
-<p>{{ blog.content }}</p>
+            {% if blog.cover_image %}
+            <img src="{{ blog.cover_image.url }}" class="cover-img">
+            {% endif %}
 
-<p><b>Category:</b> {{ blog.category }}</p>
+            <p>{{ blog.content }}</p>
 
-<p>
-    <b>Tags:</b>
-    {% for tag in blog.tags.all %}
-        {{ tag.name }},
-    {% endfor %}
-</p>
+            <div class="meta">
+                <p><b>Category:</b> {{ blog.category }}</p>
 
-<hr>
+                <div class="tags">
+                    <b>Tags:</b>
+                    {% for tag in blog.tags.all %}
+                    <span>{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
 
-<!-- ✅ LIKE BUTTON -->
-<form action="{% url 'toggle_like' blog.id %}" method="post">
-    {% csrf_token %}
-    <button type="submit">
-        {% if liked %}
-            ❤️ Unlike
-        {% else %}
-            🤍 Like
-        {% endif %}
-    </button>
-</form>
+            <!-- EDIT / DELETE -->
+            {% if request.user == blog.author %}
+            <div class="action-buttons">
+                <a href="{% url 'update_blog' blog.id %}" class="edit-btn">✏️ Edit</a>
 
-<p>Total Likes: {{ likes_count }}</p>
+                <form action="{% url 'delete_blog' blog.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="delete-btn" onclick="return confirm('Delete this blog?');">
+                        🗑️ Delete
+                    </button>
+                </form>
+            </div>
+            {% endif %}
 
-<hr>
+            <!-- LIKE -->
+            <form action="{% url 'toggle_like' blog.id %}" method="post">
+                {% csrf_token %}
+                <button class="like-btn" type="submit">
+                    {% if liked %}
+                    ❤️ Unlike
+                    {% else %}
+                    🤍 Like
+                    {% endif %}
+                </button>
+            </form>
 
-<!-- ✅ COMMENT FORM -->
-<h3>Add Comment</h3>
-<form method="post" action="{% url 'add_comment' blog.id %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Post Comment</button>
-</form>
+            <p>Total Likes: {{ likes_count }}</p>
+        </div>
 
-<hr>
+        <!-- COMMENT FORM -->
+        <div class="card">
+            <h3>Add Comment</h3>
 
-<!-- ✅ COMMENTS LIST -->
-<h3>Comments</h3>
+            <form method="post" action="{% url 'add_comment' blog.id %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="comment-btn" type="submit">Post Comment</button>
+            </form>
+        </div>
 
-{% for comment in comments %}
-    <div style="margin-bottom:10px;">
-        <b>{{ comment.user.username }}</b>: {{ comment.text }}
+        <!-- COMMENTS -->
+        <div class="card">
+            <h3>Comments</h3>
 
-        {% if comment.user == request.user %}
-            <a href="{% url 'delete_comment' comment.id %}">❌ Delete</a>
-        {% endif %}
+            {% for comment in comments %}
+            <div class="comment">
+                <b>{{ comment.user.username }}</b>: {{ comment.text }}
+
+                {% if comment.user == request.user %}
+                <a href="{% url 'delete_comment' comment.id %}" class="delete-comment">
+                    ❌ Delete
+                </a>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p>No comments yet.</p>
+            {% endfor %}
+        </div>
+
+        <a href="{% url 'blog_list' %}" class="back-link">⬅ Back to Blogs</a>
+
     </div>
-{% empty %}
-    <p>No comments yet.</p>
-{% endfor %}
-
-<hr>
-
-<a href="{% url 'blog_list' %}">⬅ Back to Blogs</a>
 
 </body>
+
 </html>

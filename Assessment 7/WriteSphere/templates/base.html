@@ -1,16 +1,116 @@
-<nav>
-    <a href="{% url 'blog_list' %}">Home</a>
+<style>
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 12px 25px;
+        border-radius: 10px;
+        margin: 15px;
+        color: white;
+        animation: slideDown 0.6s ease-in-out;
+    }
 
-    {% if user.is_authenticated %}
-        <span>Welcome {{ user.username }}</span>
-        <a href="{% url 'profile' user.id %}">My Profile</a>
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .nav-left a,
+    .nav-right a {
+        margin: 0 10px;
+        text-decoration: none;
+        color: white;
+        font-weight: 500;
+        transition: 0.3s;
+        position: relative;
+    }
+
+    .nav-left a::after,
+    .nav-right a::after {
+        content: "";
+        position: absolute;
+        width: 0%;
+        height: 2px;
+        bottom: -3px;
+        left: 0;
+        background: white;
+        transition: 0.3s;
+    }
+
+    .nav-left a:hover::after,
+    .nav-right a:hover::after {
+        width: 100%;
+    }
+
+    .nav-left a:hover,
+    .nav-right a:hover {
+        opacity: 0.8;
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .welcome-text {
+        margin-right: 15px;
+        font-weight: bold;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        background: white;
+        color: #667eea !important;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .btn:hover {
+        background: #eee;
+        transform: scale(1.05);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .navbar {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
+<nav class="navbar">
+
+    <div class="nav-left">
+        <a href="{% url 'blog_list' %}">Home</a>
+    </div>
+
+    <div class="nav-right">
+        {% if user.is_authenticated %}
+        <span class="welcome-text">👋 {{ user.username }}</span>
+
+        <a href="{% url 'profile' user.id %}">Profile</a>
+
         {% if user.profile.role == 'author' %}
-            <a href="{% url 'create_blog' %}">Create Blog</a>
+        <a href="{% url 'create_blog' %}">Create Blog</a>
         {% endif %}
-        
-        <a href="{% url 'logout' %}">Logout</a>
-    {% else %}
+
+        <a href="{% url 'logout' %}" class="btn">Logout</a>
+
+        {% else %}
         <a href="{% url 'login' %}">Login</a>
-        <a href="{% url 'register' %}">Register</a>
-    {% endif %}
+        <a href="{% url 'register' %}" class="btn">Register</a>
+        {% endif %}
+    </div>
+
 </nav>

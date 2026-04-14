@@ -1,80 +1,184 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Blog Form</title>
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
         body {
-            font-family: Arial;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
-        form {
-            width: 400px;
+
+        .container {
+            width: 450px;
         }
-        input, textarea, select {
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input,
+        textarea,
+        select {
             width: 100%;
-            margin-bottom: 10px;
-            padding: 8px;
-        }
-        button {
             padding: 10px;
-            background: black;
+            margin: 6px 0 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.4);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
             color: white;
             border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: scale(1.03);
+        }
+
+        .image-preview {
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
 
-<h2>
-    {% if form.instance.pk %}
-        ✏️ Update Blog
-    {% else %}
-        ➕ Create Blog
-    {% endif %}
-</h2>
+    <div class="container">
+        <div class="card">
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
+            <h2>
+                {% if form.instance.pk %}
+                ✏️ Update Blog
+                {% else %}
+                ➕ Create Blog
+                {% endif %}
+            </h2>
 
-    <!-- Title -->
-    <label>Title</label>
-    {{ form.title }}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
 
-    <!-- Content -->
-    <label>Content</label>
-    {{ form.content }}
+                <!-- Title -->
+                <label>Title</label>
+                {{ form.title }}
 
-    <!-- Cover Image -->
-    <label>Cover Image</label>
-    {{ form.cover_image }}
+                <!-- Content -->
+                <label>Content</label>
+                {{ form.content }}
 
-    <!-- Show existing image (update mode) -->
-    {% if form.instance.cover_image %}
-        <p>Current Image:</p>
-        <img src="{{ form.instance.cover_image.url }}" width="200">
-    {% endif %}
+                <!-- Cover Image -->
+                <label>Cover Image</label>
+                {{ form.cover_image }}
 
-    <!-- Category -->
-    <label>Category</label>
-    {{ form.category }}
+                <!-- Preview Image -->
+                {% if form.instance.cover_image %}
+                <div class="image-preview">
+                    <p><b>Current Image:</b></p>
+                    <img src="{{ form.instance.cover_image.url }}">
+                </div>
+                {% endif %}
 
-    <!-- Tags -->
-    <label>Tags</label>
-    {{ form.tags }}
+                <!-- Category -->
+                <label>Category</label>
+                {{ form.category }}
 
-    <button type="submit">
-        {% if form.instance.pk %}
-            Update Blog
-        {% else %}
-            Create Blog
-        {% endif %}
-    </button>
-</form>
+                <!-- Tags -->
+                <label>Tags</label>
+                {{ form.tags }}
 
-<br>
+                <button type="submit">
+                    {% if form.instance.pk %}
+                    Update Blog
+                    {% else %}
+                    Create Blog
+                    {% endif %}
+                </button>
+            </form>
 
-<a href="{% url 'blog_list' %}">⬅ Back to Blogs</a>
+        </div>
+
+        <a href="{% url 'blog_list' %}" class="back-link">⬅ Back to Blogs</a>
+    </div>
 
 </body>
+
 </html>
