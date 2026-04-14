@@ -1,17 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import *
-from .forms import *
+from .models import Post, Category
+from .forms import BlogForm
+from interactions.models import Like, Comment
+from interactions.forms import CommentForm
 
 
-# BLOG LIST + FILTER
 def blog_list(request):
-    blogs = Blog.objects.all().order_by('-created_at')
+    blogs = Post.objects.all().order_by('-created_at')
 
     author = request.GET.get('author')
     category = request.GET.get('category')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
 
     if author:
         blogs = blogs.filter(author__username__icontains=author)
@@ -19,18 +18,33 @@ def blog_list(request):
     if category:
         blogs = blogs.filter(category__id=category)
 
-    if start_date and end_date:
-        blogs = blogs.filter(created_at__range=[start_date, end_date])
-
     categories = Category.objects.all()
 
-    return render(request, 'blog_list.html', {
+    return render(request, 'blog/blog_list.html', {
         'blogs': blogs,
         'categories': categories
     })
 
+def blog_detail(request, id):
+    blog = get_object_or_404(Post, id=id)
 
-# CREATE BLOG
+    comments = Comment.objects.filter(post=blog).order_by('-created_at')
+    likes_count = Like.objects.filter(post=blog).count()
+
+    liked = False
+    if request.user.is_authenticated:
+        liked = Like.objects.filter(user=request.user, post=blog).exists()
+
+    form = CommentForm()
+
+    return render(request, 'blog/blog_detail.html', {
+        'blog': blog,
+        'comments': comments,
+        'likes_count': likes_count,
+        'liked': liked,
+        'form': form
+    })
+
 @login_required
 def create_blog(request):
     form = BlogForm(request.POST or None, request.FILES or None)
@@ -42,16 +56,12 @@ def create_blog(request):
         form.save_m2m()
         return redirect('blog_list')
 
-    return render(request, 'blog_form.html', {'form': form})
+    return render(request, 'blog/blog_form.html', {'form': form})
 
 
-# UPDATE BLOG
 @login_required
 def update_blog(request, id):
-    blog = get_object_or_404(Blog, id=id)
-
-    if blog.author != request.user:
-        return redirect('blog_list')
+    blog = get_object_or_404(Post, id=id)
 
     form = BlogForm(request.POST or None, request.FILES or None, instance=blog)
 
@@ -59,21 +69,16 @@ def update_blog(request, id):
         form.save()
         return redirect('blog_list')
 
-    return render(request, 'blog_form.html', {'form': form})
+    return render(request, 'blog/blog_form.html', {'form': form})
 
 
-# DELETE BLOG
 @login_required
 def delete_blog(request, id):
-    blog = get_object_or_404(Blog, id=id)
-
-    if blog.author == request.user:
-        blog.delete()
-
+    blog = get_object_or_404(Post, id=id)
+    blog.delete()
     return redirect('blog_list')
 
 
-# BLOG DETAIL
-def blog_detail(request, id):
-    blog = get_object_or_404(Blog, id=id)
-    return render(request, 'blog_detail.html', {'blog': blog})
+# def blog_detail(request, id):
+#     blog = get_object_or_404(Post, id=id)
+#     return render(request, 'blog/blog_detail.html', {'blog': blog})

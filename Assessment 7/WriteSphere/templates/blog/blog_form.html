@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blog Form</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+        form {
+            width: 400px;
+        }
+        input, textarea, select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+        button {
+            padding: 10px;
+            background: black;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<h2>
+    {% if form.instance.pk %}
+        ✏️ Update Blog
+    {% else %}
+        ➕ Create Blog
+    {% endif %}
+</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Title -->
+    <label>Title</label>
+    {{ form.title }}
+
+    <!-- Content -->
+    <label>Content</label>
+    {{ form.content }}
+
+    <!-- Cover Image -->
+    <label>Cover Image</label>
+    {{ form.cover_image }}
+
+    <!-- Show existing image (update mode) -->
+    {% if form.instance.cover_image %}
+        <p>Current Image:</p>
+        <img src="{{ form.instance.cover_image.url }}" width="200">
+    {% endif %}
+
+    <!-- Category -->
+    <label>Category</label>
+    {{ form.category }}
+
+    <!-- Tags -->
+    <label>Tags</label>
+    {{ form.tags }}
+
+    <button type="submit">
+        {% if form.instance.pk %}
+            Update Blog
+        {% else %}
+            Create Blog
+        {% endif %}
+    </button>
+</form>
+
+<br>
+
+<a href="{% url 'blog_list' %}">⬅ Back to Blogs</a>
+
+</body>
+</html>

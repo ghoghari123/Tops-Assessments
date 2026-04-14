@@ -1,79 +1,54 @@
-from django.shortcuts import render
-
-# Create your views here.
 from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout, authenticate
+from .forms import * 
+from blog.models import *
+from interactions.models import *
 from django.contrib.auth.models import User
-from django.contrib.auth import login, authenticate, logout
-from django.contrib import messages
-from .models import *
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import *
+
+def profile_view(request, user_id):
+    user_profile = get_object_or_404(User, id=user_id)
+
+    posts = Post.objects.filter(author=user_profile)
+    followers = Follow.objects.filter(following=user_profile).count()
+    following = Follow.objects.filter(follower=user_profile).count()
+
+    is_following = False
+    if request.user.is_authenticated:
+        is_following = Follow.objects.filter(
+            follower=request.user,
+            following=user_profile
+        ).exists()
 
 
 # REGISTER
 def register_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        role = request.POST.get('role', 'reader')
+    form = RegisterForm(request.POST or None)
 
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists")
-            return redirect('register')
-
-        user = User.objects.create_user(username=username, password=password)
-
-        # set role
-        user.profile.role = role
-        user.profile.save()
-
+    if form.is_valid():
+        user = form.save()
         login(request, user)
-        return redirect('home')
+        return redirect('blog_list')
 
-    return render(request, 'register.html')
+    return render(request, 'users/register.html', {'form': form})
 
 
-# LOGIN
+#  LOGIN
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
 
         if user:
-            login(request, user)   # SESSION CREATED
-            return redirect('home')
-        else:
-            messages.error(request, "Invalid credentials")
+            login(request, user)
+            return redirect('blog_list')
 
-    return render(request, 'login.html')
+    return render(request, 'users/login.html')
 
 
 # LOGOUT
 def logout_view(request):
-    logout(request)  # SESSION DESTROYED
+    logout(request)
     return redirect('login')
-
-
-# PROFILE VIEW
-@login_required
-def profile_view(request):
-    profile = request.user.profile
-    return render(request, 'profile.html', {'profile': profile})
-
-
-# EDIT PROFILE
-@login_required
-def edit_profile(request):
-    profile = request.user.profile
-
-    if request.method == 'POST':
-        profile.bio = request.POST['bio']
-
-        if 'image' in request.FILES:
-            profile.profile_image = request.FILES['image']
-
-        profile.save()
-        return redirect('profile')
-
-    return render(request, 'edit_profile.html', {'profile': profile})

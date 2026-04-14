@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ blog.title }}</title>
+</head>
+<body>
+
+<h2>{{ blog.title }}</h2>
+
+{% if blog.cover_image %}
+    <img src="{{ blog.cover_image.url }}" width="300">
+{% endif %}
+
+<p>{{ blog.content }}</p>
+
+<p><b>Category:</b> {{ blog.category }}</p>
+
+<p>
+    <b>Tags:</b>
+    {% for tag in blog.tags.all %}
+        {{ tag.name }},
+    {% endfor %}
+</p>
+
+<hr>
+
+<!-- ✅ LIKE BUTTON -->
+<form action="{% url 'toggle_like' blog.id %}" method="post">
+    {% csrf_token %}
+    <button type="submit">
+        {% if liked %}
+            ❤️ Unlike
+        {% else %}
+            🤍 Like
+        {% endif %}
+    </button>
+</form>
+
+<p>Total Likes: {{ likes_count }}</p>
+
+<hr>
+
+<!-- ✅ COMMENT FORM -->
+<h3>Add Comment</h3>
+<form method="post" action="{% url 'add_comment' blog.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Post Comment</button>
+</form>
+
+<hr>
+
+<!-- ✅ COMMENTS LIST -->
+<h3>Comments</h3>
+
+{% for comment in comments %}
+    <div style="margin-bottom:10px;">
+        <b>{{ comment.user.username }}</b>: {{ comment.text }}
+
+        {% if comment.user == request.user %}
+            <a href="{% url 'delete_comment' comment.id %}">❌ Delete</a>
+        {% endif %}
+    </div>
+{% empty %}
+    <p>No comments yet.</p>
+{% endfor %}
+
+<hr>
+
+<a href="{% url 'blog_list' %}">⬅ Back to Blogs</a>
+
+</body>
+</html>

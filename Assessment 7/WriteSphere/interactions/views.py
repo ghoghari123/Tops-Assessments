@@ -1,86 +1,93 @@
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from blog.models import Post
+from .models import Like, Comment
+from .forms import CommentForm
+from .models import Follow
 from django.contrib.auth.models import User
-from .models import *
+from django.contrib.auth.models import User
+from blog.models import Post
+from interactions.models import Follow
 
+def profile_view(request, user_id):
+    user_profile = get_object_or_404(User, id=user_id)
 
-# ❤️ LIKE / UNLIKE
+    posts = Post.objects.filter(author=user_profile)
+    followers = Follow.objects.filter(following=user_profile).count()
+    following = Follow.objects.filter(follower=user_profile).count()
+
+    is_following = False
+    if request.user.is_authenticated:
+        is_following = Follow.objects.filter(
+            follower=request.user,
+            following=user_profile
+        ).exists()
+
+    return render(request, 'users/profile.html', {
+        'user_profile': user_profile,
+        'posts': posts,
+        'followers': followers,
+        'following': following,
+        'is_following': is_following
+    })
+
 @login_required
-def like_post(request, id):
-    post = get_object_or_404(Post, id=id)
+def toggle_follow(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
 
-    like, created = Like.objects.get_or_create(
-        post=post,
-        user=request.user
-    )
+    if target_user != request.user:
+        follow = Follow.objects.filter(follower=request.user, following=target_user)
 
-    if not created:
-        like.delete()   # unlike
+        if follow.exists():
+            follow.delete()
+        else:
+            Follow.objects.create(follower=request.user, following=target_user)
 
-    return redirect('home')
+    return redirect('profile', user_id=target_user.id)
 
 
-# 💬 ADD COMMENT
+# LIKE / UNLIKE
 @login_required
-def add_comment(request, id):
-    post = get_object_or_404(Post, id=id)
+def toggle_like(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    like = Like.objects.filter(user=request.user, post=post)
+
+    if like.exists():
+        like.delete()
+    else:
+        Like.objects.create(user=request.user, post=post)
+
+    return redirect('blog_detail', id=post_id)
+
+
+#  ADD COMMENT
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
 
     if request.method == 'POST':
-        text = request.POST.get('text')
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.post = post
+            comment.save()
 
-        if text:
-            Comment.objects.create(
-                post=post,
-                user=request.user,
-                text=text
-            )
-
-    return redirect('post_detail', id=id)
+    return redirect('blog_detail', id=post_id)
 
 
-# ✏️ EDIT COMMENT
-@login_required
-def edit_comment(request, id):
-    comment = get_object_or_404(Comment, id=id)
-
-    # only owner can edit
-    if comment.user != request.user:
-        return redirect('home')
-
-    if request.method == 'POST':
-        comment.text = request.POST.get('text')
-        comment.save()
-        return redirect('post_detail', id=comment.post.id)
-
-    return render(request, 'edit_comment.html', {'comment': comment})
-
-
-# ❌ DELETE COMMENT
+# DELETE COMMENT
 @login_required
 def delete_comment(request, id):
     comment = get_object_or_404(Comment, id=id)
 
     if comment.user == request.user:
-        post_id = comment.post.id
         comment.delete()
-        return redirect('post_detail', id=post_id)
 
-    return redirect('home')
+    return redirect('blog_detail', id=comment.post.id)
 
-
-# 👥 FOLLOW / UNFOLLOW
 @login_required
-def follow_user(request, id):
-    user_to_follow = get_object_or_404(User, id=id)
-
-    if user_to_follow != request.user:
-        follow, created = Follow.objects.get_or_create(
-            follower=request.user,
-            following=user_to_follow
-        )
-
-        if not created:
-            follow.delete()   # unfollow
-
-    return redirect('home')
+def create_blog(request):
+    if request.user.profile.role != 'author':
+        return redirect('blog_list')
